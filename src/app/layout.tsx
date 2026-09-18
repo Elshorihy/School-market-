@@ -4,9 +4,26 @@ import { Navbar } from '@/components/layout/Navbar';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { ToastProvider } from '@/components/ui/Toast';
 
-// Fallback for offline build: avoid next/font/google fetch which fails in sandbox.
-// Original used Cairo from next/font/google; we use system font stack.
-const cairo = { variable: '' } as const;
+// Fix for Vercel 404 + offline sandbox:
+// - On Vercel (process.env.VERCEL=1), load Cairo from Google Fonts (network available)
+// - Offline (sandbox), use fallback to avoid build failure
+let cairo: { variable: string } = { variable: '' };
+try {
+  if (process.env.VERCEL) {
+    // eslint-disable-next-line
+    const { Cairo } = eval("require('next/font/google')");
+    cairo = Cairo({
+      subsets: ['arabic', 'latin'],
+      weight: ['400', '500', '600', '700', '800'],
+      variable: '--font-cairo',
+      display: 'swap'
+    });
+  } else {
+    cairo = { variable: '' } as const;
+  }
+} catch {
+  cairo = { variable: '' } as const;
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'),
