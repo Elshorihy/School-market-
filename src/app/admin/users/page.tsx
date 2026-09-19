@@ -24,10 +24,11 @@ const filterSchema = z.object({
 export default async function AdminUsersPage({
   searchParams
 }: {
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const resolvedSearchParams = await searchParams;
   const raw: Record<string, string> = {};
-  for (const [k, v] of Object.entries(searchParams)) if (typeof v === 'string') raw[k] = v;
+  for (const [k, v] of Object.entries(resolvedSearchParams)) if (typeof v === 'string') raw[k] = v;
   const f = filterSchema.safeParse(raw) ?? { success: true, data: {} as Record<string, unknown> };
   const filters = f.success ? (f.data as { q?: string; status?: string; page?: number }) : {};
   const page = clampInt(filters.page, 1, 200, 1);
