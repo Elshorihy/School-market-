@@ -13,11 +13,12 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default async function EditWantedPage({ params }: { params: { id: string } }) {
+export default async function EditWantedPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const user = await getCurrentUser();
-  if (!user) redirect(`/login?next=/wanted/${params.id}/edit`);
+  if (!user) redirect(`/login?next=/wanted/${id}/edit`);
   const db = getDb();
-  const [item] = await db.select().from(wantedItems).where(eq(wantedItems.id, params.id)).limit(1);
+  const [item] = await db.select().from(wantedItems).where(eq(wantedItems.id, id)).limit(1);
   if (!item) notFound();
   if (item.userId !== user.id && user.role !== 'admin') notFound();
 
