@@ -14,10 +14,11 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default async function EditListingPage({ params }: { params: { id: string } }) {
+export default async function EditListingPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const user = await getCurrentUser();
-  if (!user) redirect(`/login?next=/listings/${params.id}/edit`);
-  const listing = await getListingDetail(params.id, user);
+  if (!user) redirect(`/login?next=/listings/${id}/edit`);
+  const listing = await getListingDetail(id, user);
   if (!listing) notFound();
   if (listing.userId !== user.id && user.role !== 'admin') notFound();
 
