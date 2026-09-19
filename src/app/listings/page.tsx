@@ -22,7 +22,8 @@ export default async function ListingsPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const user = await getCurrentUser();
+  let user = null as Awaited<ReturnType<typeof getCurrentUser>>;
+  try { user = await getCurrentUser(); } catch (error) { console.error('Current user load failed:', error); }
   const resolvedSearchParams = await searchParams;
   const raw: Record<string, string> = {};
   for (const [k, v] of Object.entries(resolvedSearchParams)) {
@@ -33,7 +34,17 @@ export default async function ListingsPage({
   const filters = parsed.success ? parsed.data : {};
   const page = clampInt(filters.page, 1, 500, 1);
 
-  const { items, total, totalPages } = await queryListings({ ...filters, page }, user);
+  let items: Awaited<ReturnType<typeof queryListings>>['items'] = [];
+  let total = 0;
+  let totalPages = 1;
+  try {
+    const result = await queryListings({ ...filters, page }, user);
+    items = result.items;
+    total = result.total;
+    totalPages = result.totalPages;
+  } catch (error) {
+    console.error('Listings load failed:', error);
+  }
 
   function makeHref(nextPage: number) {
     const p2 = new URLSearchParams(raw);
