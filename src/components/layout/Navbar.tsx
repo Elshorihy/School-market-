@@ -6,7 +6,8 @@ import { SearchBar } from '@/components/marketplace/SearchBar';
 import { getCurrentUser } from '@/lib/auth';
 
 export async function Navbar() {
-  const user = await getCurrentUser();
+  let user = null as Awaited<ReturnType<typeof getCurrentUser>>;
+  try { user = await getCurrentUser(); } catch (error) { console.error('Navbar user load failed:', error); }
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/85 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/85">
