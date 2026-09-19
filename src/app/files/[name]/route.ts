@@ -12,8 +12,9 @@ const TYPES: Record<string, string> = {
   '.gif': 'image/gif'
 };
 
-export async function GET(_req: Request, { params }: { params: { name: string } }) {
-  const name = params.name;
+export async function GET(_req: Request, { params }: { params: Promise<{ name: string }> }) {
+  const { name } = await params;
+  const name = name;
   // Only allow a flat filename with a known image extension (no traversal).
   if (!/^[\w-]+\.(jpg|jpeg|png|webp|gif)$/i.test(name)) {
     return NextResponse.json({ ok: false, error: 'not found' }, { status: 404 });
