@@ -28,10 +28,11 @@ const PAGE_SIZE = 12;
 export default async function WantedPage({
   searchParams
 }: {
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const resolvedSearchParams = await searchParams;
   const raw: Record<string, string> = {};
-  for (const [k, v] of Object.entries(searchParams)) if (typeof v === 'string') raw[k] = v;
+  for (const [k, v] of Object.entries(resolvedSearchParams)) if (typeof v === 'string') raw[k] = v;
   const parsed = filterSchema.safeParse(raw);
   const f = parsed.success ? parsed.data : {};
   const page = clampInt(f.page, 1, 200, 1);
