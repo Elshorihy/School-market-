@@ -9,7 +9,20 @@ export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
   const user = await getCurrentUser();
-  const data = await getHomeData(user);
+  let data;
+  try {
+    data = await getHomeData(user);
+  } catch (error) {
+    console.error('Home data load failed:', error);
+    data = {
+      latest: [],
+      free: [],
+      exchange: [],
+      popular: [],
+      nearby: [],
+      categories: []
+    };
+  }
 
   return (
     <div className="space-y-10">
