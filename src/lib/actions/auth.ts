@@ -14,7 +14,7 @@ import { actionError, type ActionResult } from './result';
 export async function registerAction(input: RegistrationInput): Promise<ActionResult<{ id: string }>> {
   try {
     const data = registrationSchema.parse(input);
-    const ip = clientIp(headers()) ?? 'unknown';
+    const ip = clientIp(await headers()) ?? 'unknown';
     const rl = rateLimit(`register:${ip}`, 5, 10 * 60 * 1000);
     if (!rl.ok) throw new AppError('محاولات كثيرة جدًا، حاول بعد دقائق');
 
@@ -49,7 +49,7 @@ export async function registerAction(input: RegistrationInput): Promise<ActionRe
       .returning({ id: users.id });
 
     await createSession(user.id, {
-      userAgent: headers().get('user-agent') ?? undefined,
+      userAgent: (await headers()).get('user-agent') ?? undefined,
       ip
     });
     return { ok: true, data: { id: user.id } };
@@ -61,7 +61,7 @@ export async function registerAction(input: RegistrationInput): Promise<ActionRe
 export async function loginAction(input: LoginInput): Promise<ActionResult<{ id: string; role: string }>> {
   try {
     const data = loginSchema.parse(input);
-    const ip = clientIp(headers()) ?? 'unknown';
+    const ip = clientIp(await headers()) ?? 'unknown';
     const rl = rateLimit(`login:${ip}:${data.email}`, 8, 15 * 60 * 1000);
     if (!rl.ok) {
       throw new AppError('محاولات دخول كثيرة، انتظر قليلًا ثم حاول مرة أخرى');
@@ -82,7 +82,7 @@ export async function loginAction(input: LoginInput): Promise<ActionResult<{ id:
     }
 
     await createSession(user.id, {
-      userAgent: headers().get('user-agent') ?? undefined,
+      userAgent: (await headers()).get('user-agent') ?? undefined,
       ip
     });
     return { ok: true, data: { id: user.id, role: user.role } };
