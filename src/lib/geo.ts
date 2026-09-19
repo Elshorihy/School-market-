@@ -2,6 +2,7 @@ import { and, asc, eq } from 'drizzle-orm';
 import { getDb } from '@/db';
 import { areas, governorates, schools } from '@/db/schema';
 import { AppError } from './errors';
+import { EGYPT_GEOGRAPHY } from '@/db/data/geo';
 
 export interface GeoChainInput {
   governorateId?: string | null;
@@ -54,6 +55,45 @@ export async function validateGeoChain(input: GeoChainInput): Promise<void> {
   }
 }
 
+async function ensureGeoSeeded(): Promise<void> {
+  const db = getDb();
+  const existing = await db.select({ id: governorates.id }).from(governorates).limit(1);
+  if (existing.length > 0) return;
+
+  for (const [sort, geo] of EGYPT_GEOGRAPHY.entries()) {
+    const [gov] = await db
+      .insert(governorates)
+      .values({ name: geo.governorate, sort })
+      .onConflictDoNothing({ target: governorates.name })
+      .returning({ id: governorates.id });
+
+    const current = gov ?? (await db
+      .select({ id: governorates.id })
+      .from(governorates)
+      .where(eq(governorates.name, geo.governorate))
+      .limit(1))[0];
+
+    if (!current) continue;
+
+    for (const areaName of [...new Set(geo.areas)]) {
+      await db
+        .insert(areas)
+        .values({ name: areaName, governorateId: current.id })
+        .onConflictDoNothing({ target: [areas.name, areas.governorateId] });
+    }
+  }
+
+  const allAreas = await db.select({ id: areas.id, name: areas.name }).from(areas);
+  for (const area of allAreas) {
+    for (const name of [`${area.name} الرسمية لغات`, `${area.name} التجريبية`]) {
+      await db
+        .insert(schools)
+        .values({ name, areaId: area.id, isActive: true })
+        .onConflictDoNothing({ target: [schools.name, schools.areaId] });
+    }
+  }
+}
+
 export interface GeoOptions {
   governorates: { id: string; name: string }[];
   areas: { id: string; name: string }[];
@@ -68,6 +108,7 @@ export async function getGeoOptions(
   governorateId?: string | null,
   areaId?: string | null
 ): Promise<GeoOptions> {
+  await ensureGeoSeeded();
   const db = getDb();
   const [govs, areasList, schoolsList] = await Promise.all([
     db.select({ id: governorates.id, name: governorates.name }).from(governorates).orderBy(asc(governorates.sort)),
