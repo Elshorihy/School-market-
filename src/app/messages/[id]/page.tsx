@@ -14,12 +14,13 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default async function ConversationPage({ params }: { params: { id: string } }) {
+export default async function ConversationPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const user = await getCurrentUser();
   if (!user) redirect('/login?next=/messages');
   const db = getDb();
 
-  const [conv] = await db.select().from(conversations).where(eq(conversations.id, params.id)).limit(1);
+  const [conv] = await db.select().from(conversations).where(eq(conversations.id, id)).limit(1);
   if (!conv) notFound();
   if (conv.userIdA !== user.id && conv.userIdB !== user.id) notFound();
 
