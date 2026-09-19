@@ -24,7 +24,8 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default async function PublicProfilePage({ params }: { params: { id: string } }) {
+export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const user = await getCurrentUser();
   const db = getDb();
 
@@ -39,7 +40,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
     .leftJoin(governorates, eq(users.governorateId, governorates.id))
     .leftJoin(areas, eq(users.areaId, areas.id))
     .leftJoin(schools, eq(users.schoolId, schools.id))
-    .where(eq(users.id, params.id))
+    .where(eq(users.id, id))
     .limit(1);
   if (rows.length === 0) notFound();
   const profile = rows[0];
