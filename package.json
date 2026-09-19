@@ -5,8 +5,8 @@
   "description": "School Marketplace — marketplace and community platform for Egyptian students",
   "scripts": {
     "dev": "next dev",
-    "build": "opennextjs-cloudflare build",
-    "build:next": "next build",
+    "build": "next build",
+    "cloudflare:build": "opennextjs-cloudflare build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
