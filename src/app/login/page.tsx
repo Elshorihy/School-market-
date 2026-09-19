@@ -10,7 +10,8 @@ export const metadata: Metadata = {
 };
 
 export default async function LoginPage() {
-  const user = await getCurrentUser();
+  let user = null as Awaited<ReturnType<typeof getCurrentUser>>;
+  try { user = await getCurrentUser(); } catch (error) { console.error('Current user load failed:', error); }
   if (user) redirect('/');
   return (
     <div className="mx-auto max-w-md">
