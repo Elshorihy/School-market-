@@ -57,7 +57,7 @@ export async function createSession(
     ip: meta?.ip,
     expiresAt
   });
-  cookies().set(SESSION_COOKIE, token, {
+  (await cookies()).set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
@@ -67,7 +67,7 @@ export async function createSession(
 }
 
 export async function destroySession(): Promise<void> {
-  const store = cookies();
+  const store = await cookies();
   const token = store.get(SESSION_COOKIE)?.value;
   if (token) {
     const db = getDb();
@@ -81,7 +81,7 @@ export async function destroySession(): Promise<void> {
  * Returns null when there is no valid, unexpired session.
  */
 export async function getCurrentUser(): Promise<User | null> {
-  const token = cookies().get(SESSION_COOKIE)?.value;
+  const token = (await cookies()).get(SESSION_COOKIE)?.value;
   if (!token) return null;
   const db = getDb();
   const rows = await db
