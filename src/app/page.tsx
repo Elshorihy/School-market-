@@ -8,7 +8,8 @@ import { Icon } from '@/components/ui/Icon';
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  const user = await getCurrentUser();
+  let user = null as Awaited<ReturnType<typeof getCurrentUser>>;
+  try { user = await getCurrentUser(); } catch (error) { console.error('Current user load failed:', error); }
   let data;
   try {
     data = await getHomeData(user);
