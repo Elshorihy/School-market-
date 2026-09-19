@@ -20,11 +20,12 @@ export const dynamic = 'force-dynamic';
 export default async function ListingsPage({
   searchParams
 }: {
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const user = await getCurrentUser();
+  const resolvedSearchParams = await searchParams;
   const raw: Record<string, string> = {};
-  for (const [k, v] of Object.entries(searchParams)) {
+  for (const [k, v] of Object.entries(resolvedSearchParams)) {
     if (typeof v === 'string') raw[k] = v;
   }
   if (raw.reset) delete raw.reset;
