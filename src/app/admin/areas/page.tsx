@@ -14,10 +14,11 @@ const filterSchema = z.object({ governorateId: z.string().uuid().optional() });
 export default async function AdminAreasPage({
   searchParams
 }: {
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const resolvedSearchParams = await searchParams;
   const raw: Record<string, string> = {};
-  for (const [k, v] of Object.entries(searchParams)) if (typeof v === 'string') raw[k] = v;
+  for (const [k, v] of Object.entries(resolvedSearchParams)) if (typeof v === 'string') raw[k] = v;
   const parsed = filterSchema.safeParse(raw);
   const governorateId = parsed.success ? parsed.data.governorateId : undefined;
   const db = getDb();
