@@ -24,9 +24,10 @@ import { WantedCta } from './WantedCta';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
   const user = await getCurrentUser();
-  const listing = await getListingDetail(params.id, user);
+  const listing = await getListingDetail(id, user);
   if (!listing || listing.status === 'removed') {
     return { title: 'الإعلان غير موجود', robots: { index: false } };
   }
@@ -44,9 +45,10 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   };
 }
 
-export default async function ListingDetailPage({ params }: { params: { id: string } }) {
+export default async function ListingDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const user = await getCurrentUser();
-  const listing = await getListingDetail(params.id, user);
+  const listing = await getListingDetail(id, user);
   if (!listing) notFound();
 
   const isAdmin = user?.role === 'admin';
