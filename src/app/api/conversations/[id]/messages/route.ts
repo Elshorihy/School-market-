@@ -8,12 +8,13 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   const db = getDb();
-  const [conv] = await db.select().from(conversations).where(eq(conversations.id, params.id)).limit(1);
+  const [conv] = await db.select().from(conversations).where(eq(conversations.id, id)).limit(1);
   if (!conv) return NextResponse.json({ ok: false, error: 'not found' }, { status: 404 });
   if (conv.userIdA !== user.id && conv.userIdB !== user.id) {
     return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403 });
@@ -24,7 +25,7 @@ export async function GET(
   const msgs = await db
     .select()
     .from(messages)
-    .where(and(eq(messages.conversationId, params.id), after ? gt(messages.id, after) : undefined))
+    .where(and(eq(messages.conversationId, id), after ? gt(messages.id, after) : undefined))
     .orderBy(asc(messages.createdAt), asc(messages.id))
     .limit(200);
 
