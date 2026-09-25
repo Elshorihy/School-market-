@@ -1,0 +1,7 @@
+{
+  "name":"chaos-arena","version":"1.0.0","private":true,
+  "description":"CHAOS ARENA real-time multiplayer browser arena",
+  "main":"server.js",
+  "scripts":{"start":"node server.js","dev":"node server.js","check":"node --check server.js && node --check public/game.js"},
+  "dependencies":{"ws":"^8.18.3"},"engines":{"node":">=20"}
+}
